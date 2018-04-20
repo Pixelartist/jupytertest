@@ -1,0 +1,69 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```{r}
+# install.packages("RPostgreSQL")
+require("RPostgreSQL")
+
+# create a connection
+# save the password that we can "hide" it as best as we can by collapsing it
+pw <- {
+  "Rh8E1s#p#5"
+}
+
+# loads the PostgreSQL driver
+drv <- dbDriver("PostgreSQL")
+# creates a connection to the postgres database
+# note that "con" will be used later in each connection to the database
+#Enter the values for you database connection
+dsn_database = "talend"            # e.g. "compose"
+dsn_hostname = "bi-proxy" # e.g.: "aws-us-east-1-portal.4.dblayer.com"
+dsn_port = "6433"                 # e.g. 11101 
+dsn_uid = "mmueller"        # e.g. "admin"
+dsn_pwd = pw      # e.g. "xxx"
+
+tryCatch({
+  drv <- dbDriver("PostgreSQL")
+  print("Connecting to database")
+  conn <- dbConnect(drv, 
+                    dbname = dsn_database,
+                    host = dsn_hostname, 
+                    port = dsn_port,
+                    user = dsn_uid, 
+                    password = dsn_pwd)
+  print("Connected!")
+},
+error=function(cond) {
+  print("Unable to connect to database.")
+})
+
+
+# check for the cartable
+df <- dbGetQuery(conn, "select distinct status from ext_sales.salesforce_lead")
+df
+
+#summarize connection
+summary(conn)
+
+# close the connection
+dbDisconnect(con)
+dbUnloadDriver(drv)
+
+```
+
